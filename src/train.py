@@ -23,10 +23,10 @@ parser.add_argument('--trainer', default='adam', type = str, help = 'optimizer')
 parser.add_argument('--model_path', type=str, default = ' ')
 parser.add_argument('--batch_size', default=256, type=int)
 parser.add_argument('--num_workers', default=1, type=int)
-parser.add_argument('--num_epochs', default=1500, type=int,
+parser.add_argument('--num_epochs', default=1, type=int,
                     help='Number of epochs in training')
 parser.add_argument('--dropout_keep_prob', default=0.5, type=float)
-parser.add_argument('--check_after', default=2,
+parser.add_argument('--check_after', default=1,
                     type=int, help='check the network after check_after epoch')
 parser.add_argument('--train_from', default=1,
                     choices=[0, 1, 2],  # 0: from scratch, 1: from pretrained Resnet, 2: specific checkpoint in model_path
