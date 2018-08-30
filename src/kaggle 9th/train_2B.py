@@ -25,9 +25,9 @@ import datetime
 import pprint
 from easydict import EasyDict as edict
 
-import matplotlib
+# import matplotlib
 #matplotlib.use('Agg')
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 from world import cfg, create_logger, AverageMeter, accuracy
 
@@ -90,6 +90,7 @@ transforms.__package__
 random.seed(opt.TRAIN.SEED)
 torch.manual_seed(opt.TRAIN.SEED)
 torch.cuda.manual_seed(opt.TRAIN.SEED)
+torch.set_num_threads(8)
 
 
 # In[ ]:
@@ -270,7 +271,7 @@ def train(train_loader, model, criterion, optimizer, epoch):
     data_time = AverageMeter()
     losses = AverageMeter()
     top1 = AverageMeter()
-    top5 = AverageMeter()
+    top3 = AverageMeter()
 
     # switch to train mode
     model.train()
@@ -289,10 +290,10 @@ def train(train_loader, model, criterion, optimizer, epoch):
         loss = criterion(output, target_var)
 
         # measure accuracy and record loss
-        prec1, prec5 = accuracy(output.data, target, topk=(1, 5))
+        prec1, prec3 = accuracy(output.data, target, topk=(1, 3))
         losses.update(loss.data[0], input.size(0))
         top1.update(prec1[0], input.size(0))
-        top5.update(prec5[0], input.size(0))
+        top3.update(prec3[0], input.size(0))
 
         # compute gradient and do SGD step
         optimizer.zero_grad()
@@ -309,9 +310,9 @@ def train(train_loader, model, criterion, optimizer, epoch):
                         'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
                         'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
                         'Prec@1 {top1.val:.3f} ({top1.avg:.3f})\t'
-                        'Prec@5 {top5.val:.3f} ({top5.avg:.3f})'.format(
+                        'Prec@3 {top3.val:.3f} ({top3.avg:.3f})'.format(
                         epoch, i, len(train_loader), batch_time=batch_time,
-                        data_time=data_time, loss=losses, top1=top1, top5=top5))
+                        data_time=data_time, loss=losses, top1=top1, top3=top3))
 
     train_losses.append(losses.avg)
     train_top1s.append(top1.avg)
@@ -324,14 +325,14 @@ def validate(val_loader, model, criterion):
     batch_time = AverageMeter()
     losses = AverageMeter()
     top1 = AverageMeter()
-    top5 = AverageMeter()
+    top3 = AverageMeter()
 
     # switch to evaluate mode
     model.eval()
 
     end = time.time()
     for i, (input, target) in enumerate(val_loader):
-        target = target.cuda(async=True)
+        # target = target.cuda(async=True)
         input_var = Variable(input, volatile=True)
         target_var = Variable(target, volatile=True)
 
@@ -340,10 +341,10 @@ def validate(val_loader, model, criterion):
         loss = criterion(output, target_var)
 
         # measure accuracy and record loss
-        prec1, prec5 = accuracy(output.data, target, topk=(1, 5))
+        prec1, prec3 = accuracy(output.data, target, topk=(1, 3))
         losses.update(loss.data[0], input.size(0))
         top1.update(prec1[0], input.size(0))
-        top5.update(prec5[0], input.size(0))
+        top3.update(prec3[0], input.size(0))
 
         # measure elapsed time
         batch_time.update(time.time() - end)
@@ -354,13 +355,13 @@ def validate(val_loader, model, criterion):
                         'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
                         'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
                         'Prec@1 {top1.val:.3f} ({top1.avg:.3f})\t'
-                        'Prec@5 {top5.val:.3f} ({top5.avg:.3f})'.format(
+                        'Prec@3 {top3.val:.3f} ({top3.avg:.3f})'.format(
                         i, len(val_loader), batch_time=batch_time, loss=losses,
-                        top1=top1, top5=top5))
+                        top1=top1, top3=top3))
 
 
-    logger.info(' * Prec@1 {top1.avg:.3f} Prec@5 {top5.avg:.3f}'
-                .format(top1=top1, top5=top5))
+    logger.info(' * Prec@1 {top1.avg:.3f} Prec@3 {top3.avg:.3f}'
+                .format(top1=top1, top3=top3))
 
     test_losses.append(losses.avg)
     test_top1s.append(top1.avg)
@@ -431,29 +432,29 @@ logger.info('Best accuracy for single crop: {:.02f}%'.format(best_prec1))
 
 best_epoch = np.argmin(test_losses)
 best_loss = test_losses[best_epoch]
-plt.figure(0)
-x = np.arange(last_epoch+1, opt.TRAIN.EPOCHS+1)
-plt.plot(x, train_losses, '-+')
-plt.plot(x, test_losses, '-+')
-plt.scatter(best_epoch+1, best_loss, c='C1', marker='^', s=80)
-plt.ylim(ymin=0, ymax=5)
-plt.grid(linestyle=':')
-plt.xlabel('epoch')
-plt.ylabel('MSE')
-plt.title('Loss over epoch')
-plt.savefig(osp.join(opt.EXPERIMENT.DIR, 'loss_curves.png'))
+# plt.figure(0)
+# x = np.arange(last_epoch+1, opt.TRAIN.EPOCHS+1)
+# plt.plot(x, train_losses, '-+')
+# plt.plot(x, test_losses, '-+')
+# plt.scatter(best_epoch+1, best_loss, c='C1', marker='^', s=80)
+# plt.ylim(ymin=0, ymax=5)
+# plt.grid(linestyle=':')
+# plt.xlabel('epoch')
+# plt.ylabel('MSE')
+# plt.title('Loss over epoch')
+# plt.savefig(osp.join(opt.EXPERIMENT.DIR, 'loss_curves.png'))
 
 
 best_epoch = np.argmax(test_top1s)
 best_top1 = test_top1s[best_epoch]
-plt.figure(1)
-plt.plot(x, train_top1s, '-+')
-plt.plot(x, test_top1s, '-+')
-plt.scatter(best_epoch+1, best_top1, c='C1', marker='^', s=80)
-plt.ylim(ymin=0, ymax=100)
-plt.grid(linestyle=':')
-plt.xlabel('epoch')
-plt.ylabel('accuracy (%)')
-plt.title('accuracy over epoch')
-plt.savefig(osp.join(opt.EXPERIMENT.DIR, 'accuracy_curves.png'))
+# plt.figure(1)
+# plt.plot(x, train_top1s, '-+')
+# plt.plot(x, test_top1s, '-+')
+# plt.scatter(best_epoch+1, best_top1, c='C1', marker='^', s=80)
+# plt.ylim(ymin=0, ymax=100)
+# plt.grid(linestyle=':')
+# plt.xlabel('epoch')
+# plt.ylabel('accuracy (%)')
+# plt.title('accuracy over epoch')
+# plt.savefig(osp.join(opt.EXPERIMENT.DIR, 'accuracy_curves.png'))
 # In[ ]:
