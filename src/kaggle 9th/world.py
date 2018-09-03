@@ -17,7 +17,8 @@ if not osp.exists(__C.EXPERIMENT_DIR):
 __C.DATASETS = edict()
 
 __C.DATASETS.RECOGNITION = edict()
-__C.DATASETS.RECOGNITION.ROOT_DIR = osp.join(__C.ROOT_DIR, 'recognition')
+# __C.DATASETS.RECOGNITION.ROOT_DIR = osp.join(__C.ROOT_DIR, 'recognition')
+__C.DATASETS.RECOGNITION.ROOT_DIR = __C.ROOT_DIR
 __C.DATASETS.RECOGNITION.TRAIN_DIR = osp.join(__C.DATASETS.RECOGNITION.ROOT_DIR, 'train')   # run prepare_datasets.py to generate
 __C.DATASETS.RECOGNITION.TEST_DIR = osp.join(__C.DATASETS.RECOGNITION.ROOT_DIR, 'test')     # run prepare_datasets.py to generate
 __C.DATASETS.RECOGNITION.NUM_CLASSES = 103         # For assertion
