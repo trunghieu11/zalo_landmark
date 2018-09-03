@@ -7,7 +7,7 @@ __C = edict()
 cfg = __C
 
 # __C.ROOT_DIR = osp.abspath(osp.dirname(__file__))
-__C.ROOT_DIR = "/zserver/java-projects/zudm/deep-learning-projects/zalo_landmark/data/"
+__C.ROOT_DIR = "/data/"
 __C.EXPERIMENT_DIR = osp.join(__C.ROOT_DIR, 'experiments')
 if not osp.exists(__C.EXPERIMENT_DIR):
     os.makedirs(__C.EXPERIMENT_DIR)
